@@ -17,28 +17,17 @@ describe('You.com engine', () => {
   it('has correct provider metadata', () => {
     expect(youcomProvider.id).toBe('youcom');
     expect(youcomProvider.name).toBe('You.com Search');
-    expect(youcomProvider.isFree).toBe(false);
+    expect(youcomProvider.isFree).toBe(true);
     expect(youcomProvider.languages).toContain('en');
   });
 
-  it('searchYouCom returns mapped web and news results without an API key', async () => {
+  it('searchYouCom uses the keyless Agents API and sends the integration User-Agent without an API key', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
         results: {
           web: [
-            {
-              title: 'Web Result',
-              url: 'https://example.com/web',
-              description: 'Web snippet',
-            },
-          ],
-          news: [
-            {
-              title: 'News Result',
-              url: 'https://example.com/news',
-              snippets: ['News snippet'],
-            },
+            { title: 'Web Result', url: 'https://example.com/web', description: 'Web snippet' },
           ],
         },
       }),
@@ -46,58 +35,79 @@ describe('You.com engine', () => {
 
     const results = await searchYouCom('test query', 5);
 
-    expect(results).toHaveLength(2);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    const [urlArg, init] = mockFetch.mock.calls[0];
+    expect(urlArg).toBe(
+      'https://api.you.com/v1/agents/search?query=test+query&max_results=5',
+    );
+    expect(init?.headers).toMatchObject({
+      Accept: 'application/json',
+      'User-Agent': 'youdotcom-integration/lennney-agent-search-mcp',
+    });
+    expect(init?.headers).not.toHaveProperty('X-API-Key');
+    expect(results).toHaveLength(1);
     expect(results[0]).toMatchObject({
       title: 'Web Result',
       url: 'https://example.com/web',
       snippet: 'Web snippet',
       source: 'youcom',
     });
-    expect(results[1]).toMatchObject({
-      title: 'News Result',
-      url: 'https://example.com/news',
-      snippet: 'News snippet',
-      source: 'youcom',
-    });
     expect(results[0].engines).toEqual(['youcom']);
   });
 
-  it('searchYouCom sends YDC_API_KEY when configured', async () => {
+  it('searchYouCom upgrades to the keyed Search API and flattens web and news when YDC_API_KEY is set', async () => {
     process.env.YDC_API_KEY = 'test-key';
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => ({ results: { web: [] } }),
+      json: async () => ({
+        results: {
+          web: [
+            { title: 'Web Result', url: 'https://example.com/web', description: 'Web snippet' },
+          ],
+          news: [
+            { title: 'News Result', url: 'https://example.com/news', snippets: ['News snippet'] },
+          ],
+        },
+      }),
     });
 
-    await searchYouCom('test query', 5);
+    const results = await searchYouCom('test query', 5);
 
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    const [, init] = mockFetch.mock.calls[0];
-    const [urlArg] = mockFetch.mock.calls[0];
+    const [urlArg, init] = mockFetch.mock.calls[0];
     expect(urlArg).toBe('https://ydc-index.io/v1/search?query=test+query&count=5');
     expect(init?.headers).toMatchObject({
       Accept: 'application/json',
       'X-API-Key': 'test-key',
+      'User-Agent': 'youdotcom-integration/lennney-agent-search-mcp',
     });
+    expect(results).toHaveLength(2);
+    expect(results[0]).toMatchObject({ title: 'Web Result', source: 'youcom' });
+    expect(results[1]).toMatchObject({ title: 'News Result', snippet: 'News snippet', source: 'youcom' });
+  });
+
+  it('searchYouCom parses a flat results array (Agents API shape)', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        results: [
+          { title: 'Flat Result', url: 'https://example.com/flat', snippet: 'Flat snippet' },
+        ],
+      }),
+    });
+
+    const results = await searchYouCom('test query', 5);
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({ title: 'Flat Result', snippet: 'Flat snippet' });
   });
 
   it('searchYouCom throws on HTTP 500 (server error)', async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 500,
-    });
-
+    mockFetch.mockResolvedValue({ ok: false, status: 500 });
     await expect(searchYouCom('test query', 5)).rejects.toThrow('You.com HTTP 500');
   });
 
   it('searchYouCom returns empty array when results are missing', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({}),
-    });
-
-    const results = await searchYouCom('test query', 5);
-    expect(results).toEqual([]);
+    mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    expect(await searchYouCom('test query', 5)).toEqual([]);
   });
 
   it('searchYouCom returns empty array when web and news are both null', async () => {
@@ -105,9 +115,7 @@ describe('You.com engine', () => {
       ok: true,
       json: async () => ({ results: { web: null, news: null } }),
     });
-
-    const results = await searchYouCom('test query', 5);
-    expect(results).toEqual([]);
+    expect(await searchYouCom('test query', 5)).toEqual([]);
   });
 
   it('searchYouCom filters out items without title', async () => {
@@ -122,7 +130,6 @@ describe('You.com engine', () => {
         },
       }),
     });
-
     const results = await searchYouCom('test query', 5);
     expect(results).toHaveLength(1);
     expect(results[0].title).toBe('Good');
@@ -140,7 +147,6 @@ describe('You.com engine', () => {
         },
       }),
     });
-
     const results = await searchYouCom('test query', 5);
     expect(results).toHaveLength(1);
     expect(results[0].url).toBe('https://example.com/good');
@@ -162,7 +168,6 @@ describe('You.com engine', () => {
         },
       }),
     });
-
     const results = await searchYouCom('test query', 5);
     expect(results).toHaveLength(1);
     expect(results[0].snippet).toBe('This is from snippets');
@@ -178,38 +183,21 @@ describe('You.com engine', () => {
       ok: true,
       json: async () => ({ results: { web: items } }),
     });
-
-    const results = await searchYouCom('test query', 3);
-    expect(results).toHaveLength(3);
+    expect(await searchYouCom('test query', 3)).toHaveLength(3);
   });
 
   it('searchYouCom returns empty array on 4xx (client error)', async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 401,
-    });
-
-    const results = await searchYouCom('test query', 5);
-    expect(results).toEqual([]);
+    mockFetch.mockResolvedValue({ ok: false, status: 401 });
+    expect(await searchYouCom('test query', 5)).toEqual([]);
   });
 
   it('searchYouCom returns empty array on 429 (rate limit)', async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 429,
-    });
-
-    const results = await searchYouCom('test query', 5);
-    expect(results).toEqual([]);
+    mockFetch.mockResolvedValue({ ok: false, status: 429 });
+    expect(await searchYouCom('test query', 5)).toEqual([]);
   });
 
   it('searchYouCom throws on 5xx (server error)', async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 503,
-    });
-
+    mockFetch.mockResolvedValue({ ok: false, status: 503 });
     await expect(searchYouCom('test query', 5)).rejects.toThrow('You.com HTTP 503');
   });
-
 });

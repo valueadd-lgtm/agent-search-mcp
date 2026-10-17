@@ -38,13 +38,6 @@
           "name": "EXA_API_KEY"
         },
         {
-          "description": "You.com Search API key (optional, enables You.com engine)",
-          "isRequired": false,
-          "format": "string",
-          "isSecret": true,
-          "name": "YDC_API_KEY"
-        },
-        {
           "description": "Tencent Web Search API key (optional, enables Tencent WSA engine)",
           "isRequired": false,
           "format": "string",

@@ -26,12 +26,12 @@ describe('provider catalog', () => {
       'yandex',
       'mojeek',
       'wiby',
+      'youcom',
     ]);
     expect(paidEngines).toEqual([
       'brave',
       'tavily',
       'exa',
-      'youcom',
       'tencent_wsa',
       'bocha',
       'serper',
