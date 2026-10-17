@@ -178,7 +178,7 @@ commit。[2026-08-10 增量调研](./docs/research/2026-08-10-competitive-landsc
 <!-- BEGIN GENERATED CAPABILITY MATRIX -->
 ## 搜索引擎
 
-运行时注册了 16 个适配器：9 个零密钥适配器和 7 个可选 API 适配器。
+运行时注册了 16 个适配器：10 个零密钥适配器和 6 个可选 API 适配器。
 
 | 引擎 | 访问方式 | 语言 | 定位 |
 |---|---|---|---|
@@ -194,7 +194,7 @@ commit。[2026-08-10 增量调研](./docs/research/2026-08-10-competitive-landsc
 | Brave Search | `BRAVE_API_KEY` | en, zh | 可选商业网页搜索 |
 | Tavily Search | `TAVILY_API_KEY` | en, zh | 可选 Agent 导向搜索 |
 | Exa Search | `EXA_API_KEY` | en, zh | 可选神经语义搜索 |
-| You.com Search | `YDC_API_KEY` | en, zh | 可选商业网页搜索 |
+| You.com Search | 零密钥 | en, zh | 免费免密网页搜索（可选 API key 提升额度） |
 | Tencent Web Search API | `TENCENT_WSA_API_KEY` | zh | 可选官方中文联网搜索 |
 | Bocha Web Search | `BOCHA_API_KEY` | zh, en | 可选中文优先 AI 搜索 |
 | Serper Google Search | `SERPER_API_KEY` | en, zh, auto | 可选 Google SERP 搜索 |
@@ -249,7 +249,7 @@ Wiby 使用官方 JSON API，是无需账号和 API Key 的真实零密钥来源
 
 | 目标 | 环境变量 |
 |---|---|
-| 增加可选渠道 | `BRAVE_API_KEY`、`TAVILY_API_KEY`、`EXA_API_KEY`、`YDC_API_KEY`、`TENCENT_WSA_API_KEY`、`BOCHA_API_KEY` 或 `SERPER_API_KEY` |
+| 增加可选渠道 | `BRAVE_API_KEY`、`TAVILY_API_KEY`、`EXA_API_KEY`、`TENCENT_WSA_API_KEY`、`BOCHA_API_KEY` 或 `SERPER_API_KEY`（You.com 为零密钥；设置 `YDC_API_KEY` 可升级到带密钥的 Search API） |
 | 选择费用策略 | `SEARCH_PROVIDER_MODE`、`PAID_ENGINE_ORDER` |
 | 减少响应 Token | `OUTPUT_STYLE=compact`、`MAX_FULL_RESULTS`、`SNIPPET_LENGTH`、`EVIDENCE_BUDGET_CHARS` |
 | 限制工具或引擎 | `ENABLED_TOOLS`、`DISABLED_TOOLS`、`ALLOWED_ENGINES`、`DENIED_ENGINES` |

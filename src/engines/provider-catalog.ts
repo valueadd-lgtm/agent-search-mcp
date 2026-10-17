@@ -88,11 +88,19 @@ export const providerCatalog = {
     strengths: { en: 'Optional neural Search', zh: '可选神经语义搜索' },
   },
   youcom: {
-    id: 'youcom', name: 'You.com Search', access: 'optional-api', isFree: false,
+    // Keyless free tier (Agents API, ~100 searches/day per IP) makes You.com
+    // usable without an API key; setting YDC_API_KEY upgrades to the keyed
+    // Search API inside searchYouCom for higher quota and `news` coverage. No
+    // waterfallPhase keeps it out of the default free waterfall — opt in via
+    // `engines: ['youcom']`.
+    id: 'youcom', name: 'You.com Search', access: 'zero-key', isFree: true,
     languages: ['en', 'zh'], family: 'youcom', weight: 0.91,
-    credentialEnvironment: 'YDC_API_KEY',
+    credentialEnvironment: undefined,
     waterfallPhase: undefined,
-    strengths: { en: 'Optional commercial Web Search', zh: '可选商业网页搜索' },
+    strengths: {
+      en: 'Free keyless Web Search (optional API key for higher quota)',
+      zh: '免费免密网页搜索（可选 API key 提升额度）',
+    },
   },
   tencent_wsa: {
     id: 'tencent_wsa', name: 'Tencent Web Search API', access: 'optional-api', isFree: false,

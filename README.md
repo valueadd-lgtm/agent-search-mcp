@@ -189,7 +189,7 @@ contains the architecture-specific evidence.
 <!-- BEGIN GENERATED CAPABILITY MATRIX -->
 ## Engines
 
-The runtime registers 16 adapters: 9 zero-key adapters and 7 optional API adapters.
+The runtime registers 16 adapters: 10 zero-key adapters and 6 optional API adapters.
 
 | Engine | Access | Languages | Role |
 |---|---|---|---|
@@ -205,7 +205,7 @@ The runtime registers 16 adapters: 9 zero-key adapters and 7 optional API adapte
 | Brave Search | `BRAVE_API_KEY` | en, zh | Optional commercial Web Search |
 | Tavily Search | `TAVILY_API_KEY` | en, zh | Optional agent-oriented Search |
 | Exa Search | `EXA_API_KEY` | en, zh | Optional neural Search |
-| You.com Search | `YDC_API_KEY` | en, zh | Optional commercial Web Search |
+| You.com Search | Zero-key | en, zh | Free keyless Web Search (optional API key for higher quota) |
 | Tencent Web Search API | `TENCENT_WSA_API_KEY` | zh | Optional official Chinese Web Search |
 | Bocha Web Search | `BOCHA_API_KEY` | zh, en | Optional Chinese-first AI Search |
 | Serper Google Search | `SERPER_API_KEY` | en, zh, auto | Optional Google SERP Search |
@@ -265,7 +265,7 @@ settings cover the common deployment choices:
 
 | Goal | Environment variables |
 |---|---|
-| Add an optional provider | `BRAVE_API_KEY`, `TAVILY_API_KEY`, `EXA_API_KEY`, `YDC_API_KEY`, `TENCENT_WSA_API_KEY`, `BOCHA_API_KEY`, or `SERPER_API_KEY` |
+| Add an optional provider | `BRAVE_API_KEY`, `TAVILY_API_KEY`, `EXA_API_KEY`, `TENCENT_WSA_API_KEY`, `BOCHA_API_KEY`, or `SERPER_API_KEY` (You.com is zero-key; set `YDC_API_KEY` to upgrade it to the keyed Search API) |
 | Choose spend policy | `SEARCH_PROVIDER_MODE`, `PAID_ENGINE_ORDER` |
 | Reduce response tokens | `OUTPUT_STYLE=compact`, `MAX_FULL_RESULTS`, `SNIPPET_LENGTH`, `EVIDENCE_BUDGET_CHARS` |
 | Restrict tools or engines | `ENABLED_TOOLS`, `DISABLED_TOOLS`, `ALLOWED_ENGINES`, `DENIED_ENGINES` |
